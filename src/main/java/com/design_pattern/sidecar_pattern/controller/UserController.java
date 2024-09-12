@@ -2,6 +2,7 @@ package com.design_pattern.sidecar_pattern.controller;
 
 import com.design_pattern.sidecar_pattern.dto.User;
 import com.design_pattern.sidecar_pattern.mapper.UserMapper;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
