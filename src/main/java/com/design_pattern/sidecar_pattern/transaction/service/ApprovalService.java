@@ -6,6 +6,7 @@ import com.design_pattern.sidecar_pattern.transaction.step.approval.ApprovalStep
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Description;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,12 +28,17 @@ public class ApprovalService {
         return approvalSteps;
     }
 
+    @Description(
+            "approvalSteps는 ApprovalStep 객체들의 리스트이다.\n" +
+            "for 루프는 리스트의 각 ApprovalStep 객체를 순회한다.\n" +
+            "각 ApprovalStep 객체에 대해 step.execute(approval)을 호출하여 해당 단계를 실행한다.\n" +
+            "approval 객체는 Approval 클래스의 인스턴스로, 승인 프로세스에 대한 정보를 담고 있다.")
     @Transactional
     public void processApproval(Approval approval) {
         approval.setStatus("PENDING");
         approvalMapper.insertApproval(approval);
 
-        for (ApprovalStep step : approvalSteps) {
+        for (ApprovalStep step : approvalSteps) { // for 문에서 approvalSteps 리스트에 있는 모든 ApprovalStep 구현체의 execute 메서드를 실행한다.
             step.execute(approval);
         }
     }
@@ -64,13 +70,6 @@ public class ApprovalService {
                 logger.debug("All steps completed. Updating approval status to COMPLETED for approval: {}", approvalId);
                 approvalMapper.updateApprovalStatus(approvalId, "COMPLETED");
                 logger.info("Approval status updated to COMPLETED for approval: {}", approvalId);
-
-//                // Insert the approval record (완료 됐을때 approvals 테이블에 insert)
-//                Approval approval = new Approval();
-//                approval.setId(approvalId);
-//                approval.setStatus("COMPLETED");
-//                approval.setCurrentStep("APPROVED");
-//                approvalMapper.insertApproval(approval); // This line ensures the approval record is inserted
             } else {
                 logger.debug("Current step: {}. Total steps: {}", step, approvalSteps.size());
             }
