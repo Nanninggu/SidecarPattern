@@ -1,0 +1,32 @@
+package com.design_pattern.sidecar_pattern.transaction.step.approval;
+
+import com.design_pattern.sidecar_pattern.transaction.dto.Approval;
+import com.design_pattern.sidecar_pattern.transaction.mapper.ApprovalMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+@Component
+public class GroupLeaderApprovalStep implements ApprovalStep {
+    private static final Logger logger = LoggerFactory.getLogger(GroupLeaderApprovalStep.class);
+    private final ApprovalMapper approvalMapper;
+
+    @Autowired
+    public GroupLeaderApprovalStep(ApprovalMapper approvalMapper) {
+        this.approvalMapper = approvalMapper;
+    }
+
+    @Override
+    public void execute(Approval approval) {
+        saveStepStatus(approval.getId(), "GROUP_LEADER", "COMPLETED");
+        approval.setStatus("GROUP_LEADER_COMPLETED");
+        approvalMapper.updateApprovalStatus(approval.getId(), approval.getStatus());
+        logger.info("Approval status updated to GROUP_LEADER_COMPLETED for approval: {}", approval.getId());
+    }
+
+    private void saveStepStatus(String approvalId, String stepName, String status) {
+        approvalMapper.insertStepStatus(approvalId, stepName, status);
+        logger.info("Step status saved: approvalId={}, stepName={}, status={}", approvalId, stepName, status);
+    }
+}

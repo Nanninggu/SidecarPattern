@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.design_pattern.sidecar_pattern.transaction.mapper.ApprovalMapper">
+
+    <insert id="insertApproval" parameterType="com.design_pattern.sidecar_pattern.transaction.dto.Approval">
+        INSERT INTO approvals (id, status, current_step)
+        VALUES (#{id}, #{status}, #{currentStep})
+        ON CONFLICT (id) DO UPDATE SET
+        status = EXCLUDED.status,
+        current_step = EXCLUDED.current_step
+    </insert>
+
+    <update id="updateApprovalStatus">
+        UPDATE approvals
+        SET status = #{status}
+        WHERE id = #{id}
+    </update>
+
+    <insert id="insertStepStatus" parameterType="map">
+        INSERT INTO approval_steps (approval_id, step_name, status)
+        VALUES (#{approvalId}, #{stepName}, #{status})
+        ON CONFLICT (approval_id, step_name) DO UPDATE SET status = EXCLUDED.status
+    </insert>
+
+</mapper>

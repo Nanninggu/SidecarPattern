@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Approval Flow</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f4f4f4;
+        }
+        .container {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            max-width: 400px; /* 가로 사이즈를 줄임 */
+        }
+        .step {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .step.active {
+            display: flex;
+        }
+        .step .circle {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: #4CAF50;
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .step .label {
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <form id="approvalForm" class="mb-4">
+        <div class="form-group">
+            <label for="id">ID:</label>
+            <input type="text" class="form-control" id="id" name="id" required>
+        </div>
+        <div class="form-group">
+            <label for="status">Status:</label>
+            <input type="text" class="form-control" id="status" name="status" required>
+        </div>
+        <div class="form-group">
+            <label for="currentStep">Current Step:</label>
+            <input type="text" class="form-control" id="currentStep" name="currentStep" required>
+        </div>
+        <button type="button" class="btn btn-primary" onclick="startApprovalFlow()">Start Approval Flow</button>
+    </form>
+    <div class="step active" id="step1">
+        <div class="circle">1</div>
+        <div class="label">Initial Step</div>
+        <div class="buttons">
+            <button class="btn btn-success" onclick="nextStep(1)">승인</button>
+            <button class="btn btn-danger" onclick="rollback(1)">반려</button>
+        </div>
+    </div>
+    <div class="step" id="step2">
+        <div class="circle">2</div>
+        <div class="label">Group Leader Approval</div>
+        <div class="buttons">
+            <button class="btn btn-success" onclick="nextStep(2)">승인</button>
+            <button class="btn btn-danger" onclick="rollback(2)">반려</button>
+        </div>
+    </div>
+    <div class="step" id="step3">
+        <div class="circle">3</div>
+        <div class="label">Team Leader Approval</div>
+        <div class="buttons">
+            <button class="btn btn-success" onclick="nextStep(3)">승인</button>
+            <button class="btn btn-danger" onclick="rollback(3)">반려</button>
+        </div>
+    </div>
+    <div class="step" id="step4">
+        <div class="circle">4</div>
+        <div class="label">Final Approval</div>
+        <div class="buttons">
+            <button class="btn btn-success" onclick="nextStep(4)">승인</button>
+            <button class="btn btn-danger" onclick="rollback(4)">반려</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    function startApprovalFlow() {
+        const id = document.getElementById('id').value;
+        const status = document.getElementById('status').value;
+        const currentStep = document.getElementById('currentStep').value;
+
+        fetch(`/approvals`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ id, status, currentStep })
+        })
+        .then(response => response.text())
+        .then(data => {
+            if (data.includes('successfully')) {
+                alert('Approval flow started successfully.');
+            } else {
+                alert('Failed to start approval flow.');
+            }
+        });
+    }
+
+    function nextStep(currentStep) {
+        const id = document.getElementById('id').value;
+        fetch(`/approvals/${id}/approve-step?step=${currentStep}`, {
+            method: 'POST'
+        })
+        .then(response => response.text())
+        .then(data => {
+            if (data.includes('successfully')) {
+                document.getElementById('step' + currentStep).classList.remove('active');
+                const nextStep = currentStep + 1;
+                if (document.getElementById('step' + nextStep)) {
+                    document.getElementById('step' + nextStep).classList.add('active');
+                } else {
+                    alert('모든 승인이 완료되었습니다.');
+                }
+            } else {
+                alert('승인 처리에 실패했습니다.');
+            }
+        });
+    }
+
+    function rollback(currentStep) {
+    const id = document.getElementById('id').value;
+    fetch(`/approvals/${id}/reject-step?step=${currentStep}`, {
+    method: 'POST'
+    })
+    .then(response => response.text())
+    .then(data => {
+        if (data.includes('successfully')) {
+            alert('승인 프로세스가 반려되었습니다.');
+        } else {
+        console.error('Server response:', data);
+        alert('반려 처리에 실패했습니다.');
+        }
+    })
+    .catch(error => {
+        console.error('Network or server error:', error);
+        alert('반려 처리에 실패했습니다.');
+    });
+    }
+</script>
+</body>
+</html>
