@@ -32,7 +32,16 @@ public class ApprovalService {
             "approvalSteps는 ApprovalStep 객체들의 리스트이다.\n" +
             "for 루프는 리스트의 각 ApprovalStep 객체를 순회한다.\n" +
             "각 ApprovalStep 객체에 대해 step.execute(approval)을 호출하여 해당 단계를 실행한다.\n" +
-            "approval 객체는 Approval 클래스의 인스턴스로, 승인 프로세스에 대한 정보를 담고 있다.")
+            "approval 객체는 Approval 클래스의 인스턴스로, 승인 프로세스에 대한 정보를 담고 있다." +
+
+                    "// approvalSteps 리스트의 크기를 가져옵니다.\n" +
+                    "int totalSteps = approvalSteps.size();\n" +
+                    "\n" +
+                    "// 각 단계를 순차적으로 실행합니다.\n" +
+                    "for (int i = 0; i < totalSteps; i++) {\n" +
+                    "    ApprovalStep step = approvalSteps.get(i);\n" +
+                    "    step.execute(approval);\n" +
+                    "}")
     @Transactional
     public void processApproval(Approval approval) {
         approval.setStatus("PENDING");

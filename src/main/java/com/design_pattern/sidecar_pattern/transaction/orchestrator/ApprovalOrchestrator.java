@@ -25,7 +25,17 @@ public class ApprovalOrchestrator {
                     "승인 과정 중 예외가 발생하면 catch 블록이 실행된다.\n" +
                     "compensateApproval(approval.getId())을 호출하여 보상 트랜잭션을 수행한다.\n" +
                     "보상 트랜잭션은 이전에 성공한 단계를 롤백한다.\n" +
-                    "예외를 다시 던져서 호출자에게 예외가 발생했음을 알린다.")
+                    "예외를 다시 던져서 호출자에게 예외가 발생했음을 알린다." +
+
+                            "approvalService.processApproval(approval);\n" +
+                            "\n" +
+                            "int totalSteps = approvalService.getApprovalSteps().size();\n" +
+                            "int step = 1;\n" +
+                            "\n" +
+                            "while (step <= totalSteps) {\n" +
+                            "    approvalService.approveStep(approval.getId(), step);\n" +
+                            "    step++;\n" +
+                            "}")
     public void executeApprovalSaga(Approval approval) {
         try {
             approvalService.processApproval(approval);

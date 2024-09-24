@@ -2,6 +2,7 @@ package com.design_pattern.sidecar_pattern.controller;
 
 import com.design_pattern.sidecar_pattern.dto.User;
 import com.design_pattern.sidecar_pattern.mapper.UserMapper;
+import com.design_pattern.sidecar_pattern.util.UserRoleChecker;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,6 +20,9 @@ public class UserController {
 
     @Autowired
     private RestTemplate restTemplate;
+
+    @Autowired
+    private UserRoleChecker userRoleChecker;
 
     @GetMapping("/users")
     public List<User> getUsers() {
@@ -54,5 +58,14 @@ public class UserController {
     public Object fetchLogJson() {
         String sidecarServiceUrl = "http://localhost:8081/log";
         return restTemplate.getForObject(sidecarServiceUrl, Object.class);
+    }
+
+    @GetMapping("/check-role")
+    public String checkUserRole() {
+        if (userRoleChecker.hasRole("ROLE_USER")) {
+            return "User has ROLE_USER";
+        } else {
+            return "User does not have ROLE_USER";
+        }
     }
 }

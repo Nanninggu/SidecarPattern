@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -21,7 +21,7 @@
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            max-width: 400px; /* 가로 사이즈를 줄임 */
+            max-width: 400px;
         }
         .step {
             display: none;
@@ -52,6 +52,8 @@
 <body>
 <div class="container">
     <form id="approvalForm" class="mb-4">
+        <!-- CSRF 토큰을 위한 hidden input 필드 추가 -->
+        <input type="hidden" id="_csrf" name="_csrf" th:value="${_csrf.token}"/>
         <div class="form-group">
             <label for="id">파라미터: ID:</label>
             <input type="text" class="form-control" id="id" name="id" required>
@@ -101,15 +103,22 @@
 </div>
 
 <script>
+    // CSRF 토큰을 가져오는 함수 추가
+    function getCsrfToken() {
+        return document.getElementById('_csrf').value;
+    }
+
     function startApprovalFlow() {
         const id = document.getElementById('id').value;
         const status = document.getElementById('status').value;
         const currentStep = document.getElementById('currentStep').value;
+        const csrfToken = getCsrfToken(); // CSRF 토큰 가져오기
 
         fetch(`/approvals`, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': csrfToken // CSRF 토큰을 헤더에 추가
             },
             body: JSON.stringify({ id, status, currentStep })
         })
@@ -125,8 +134,13 @@
 
     function nextStep(currentStep) {
         const id = document.getElementById('id').value;
+        const csrfToken = getCsrfToken(); // CSRF 토큰 가져오기
+
         fetch(`/approvals/${id}/approve-step?step=${currentStep}`, {
-            method: 'POST'
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': csrfToken // CSRF 토큰을 헤더에 추가
+            }
         })
         .then(response => response.text())
         .then(data => {
@@ -145,23 +159,28 @@
     }
 
     function rollback(currentStep) {
-    const id = document.getElementById('id').value;
-    fetch(`/approvals/${id}/reject-step?step=${currentStep}`, {
-    method: 'POST'
-    })
-    .then(response => response.text())
-    .then(data => {
-        if (data.includes('successfully')) {
-            alert('승인 프로세스가 반려되었습니다.');
-        } else {
-        console.error('Server response:', data);
-        alert('반려 처리에 실패했습니다.');
-        }
-    })
-    .catch(error => {
-        console.error('Network or server error:', error);
-        alert('반려 처리에 실패했습니다.');
-    });
+        const id = document.getElementById('id').value;
+        const csrfToken = getCsrfToken(); // CSRF 토큰 가져오기
+
+        fetch(`/approvals/${id}/reject-step?step=${currentStep}`, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': csrfToken // CSRF 토큰을 헤더에 추가
+            }
+        })
+        .then(response => response.text())
+        .then(data => {
+            if (data.includes('successfully')) {
+                alert('승인 프로세스가 반려되었습니다.');
+            } else {
+                console.error('Server response:', data);
+                alert('반려 처리에 실패했습니다.');
+            }
+        })
+        .catch(error => {
+            console.error('Network or server error:', error);
+            alert('반려 처리에 실패했습니다.');
+        });
     }
 </script>
 </body>
